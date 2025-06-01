@@ -3,8 +3,9 @@ Proyek ini merupakan implementasi sistem rekomendasi hadiah yang dibangun menggu
 Sistem akan mencocokkan data pengguna dengan kumpulan data hadiah yang telah diklasifikasikan berdasarkan kategori, lalu memberikan rekomendasi terbaik beserta penjelasan logisnya.
 
 **Cara Menjalankan di Google Colab**
-1.	Buka Google Colab:
+1. Download file rekomendasi_kado.ipynb
+2.	Buka Google Colab:
 https://colab.research.google.com
-2.	Klik "File" → "Open notebook" → "GitHub"
-3.	Pilih file Rekomendasi_kado.ipynb lalu klik Open.
-4.	Setelah notebook terbuka, jalankan tiap sel dari atas ke bawah dengan klik tombol ▶️ di samping kiri sel kode.
+3.	Klik "File" → "Open notebook" 
+4.	Pilih file Rekomendasi_kado.ipynb lalu klik Open.
+5.	Setelah notebook terbuka, jalankan tiap sel dari atas ke bawah dengan klik tombol ▶️ di samping kiri sel kode.
