@@ -1,0 +1,222 @@
+import json
+from typing import Dict, List, Any
+
+class GiftRecommendationAI:
+    def __init__(self):
+        # Data hadiah dengan kategori dan atribut
+        self.gifts_data = {
+            "teknologi": [
+                {"nama": "Smartphone", "harga": "menengah", "usia": [18, 65], "gender": ["pria", "wanita"], "hobi": ["teknologi", "gaming", "sosial_media"]},
+                {"nama": "Laptop Gaming", "harga": "tinggi", "usia": [16, 40], "gender": ["pria", "wanita"], "hobi": ["gaming", "teknologi", "programming"]},
+                {"nama": "Smartwatch", "harga": "menengah", "usia": [20, 60], "gender": ["pria", "wanita"], "hobi": ["olahraga", "teknologi", "kesehatan"]},
+                {"nama": "Earbuds Wireless", "harga": "rendah", "usia": [15, 50], "gender": ["pria", "wanita"], "hobi": ["musik", "teknologi", "olahraga"]},
+                {"nama": "Power Bank", "harga": "rendah", "usia": [16, 65], "gender": ["pria", "wanita"], "hobi": ["travel", "teknologi"]}
+            ],
+            "fashion": [
+                {"nama": "Tas Branded", "harga": "tinggi", "usia": [18, 45], "gender": ["wanita"], "hobi": ["fashion", "shopping", "sosial_media"]},
+                {"nama": "Sepatu Sneakers", "harga": "menengah", "usia": [15, 35], "gender": ["pria", "wanita"], "hobi": ["olahraga", "fashion", "streetwear"]},
+                {"nama": "Jam Tangan Klasik", "harga": "tinggi", "usia": [25, 65], "gender": ["pria"], "hobi": ["fashion", "bisnis", "koleksi"]},
+                {"nama": "Parfum", "harga": "menengah", "usia": [18, 60], "gender": ["pria", "wanita"], "hobi": ["fashion", "sosial_media"]},
+                {"nama": "Dompet Kulit", "harga": "menengah", "usia": [20, 65], "gender": ["pria", "wanita"], "hobi": ["fashion", "bisnis"]}
+            ],
+            "hobi": [
+                {"nama": "Set Alat Lukis", "harga": "menengah", "usia": [10, 65], "gender": ["pria", "wanita"], "hobi": ["seni", "melukis", "kreatif"]},
+                {"nama": "Gitar Akustik", "harga": "tinggi", "usia": [12, 50], "gender": ["pria", "wanita"], "hobi": ["musik", "bermain_alat_musik"]},
+                {"nama": "Buku Novel", "harga": "rendah", "usia": [15, 65], "gender": ["pria", "wanita"], "hobi": ["membaca", "sastra"]},
+                {"nama": "Board Game", "harga": "menengah", "usia": [8, 45], "gender": ["pria", "wanita"], "hobi": ["gaming", "sosial", "keluarga"]},
+                {"nama": "Kamera DSLR", "harga": "tinggi", "usia": [18, 55], "gender": ["pria", "wanita"], "hobi": ["fotografi", "travel", "seni"]}
+            ],
+            "makanan": [
+                {"nama": "Cokelat Premium", "harga": "menengah", "usia": [5, 65], "gender": ["pria", "wanita"], "hobi": ["kuliner", "manis"]},
+                {"nama": "Wine Collection", "harga": "tinggi", "usia": [21, 65], "gender": ["pria", "wanita"], "hobi": ["kuliner", "koleksi", "sosial"]},
+                {"nama": "Tea Set", "harga": "menengah", "usia": [25, 65], "gender": ["wanita"], "hobi": ["kuliner", "relaksasi", "tradisional"]},
+                {"nama": "Coffee Maker", "harga": "tinggi", "usia": [22, 55], "gender": ["pria", "wanita"], "hobi": ["kuliner", "kopi", "rumah"]},
+                {"nama": "Hampers Snack", "harga": "rendah", "usia": [10, 65], "gender": ["pria", "wanita"], "hobi": ["kuliner", "santai"]}
+            ],
+            "olahraga": [
+                {"nama": "Sepeda Lipat", "harga": "tinggi", "usia": [15, 50], "gender": ["pria", "wanita"], "hobi": ["olahraga", "travel", "kesehatan"]},
+                {"nama": "Matras Yoga", "harga": "rendah", "usia": [18, 60], "gender": ["wanita"], "hobi": ["olahraga", "yoga", "kesehatan", "relaksasi"]},
+                {"nama": "Dumbell Set", "harga": "menengah", "usia": [16, 50], "gender": ["pria", "wanita"], "hobi": ["olahraga", "fitness", "kesehatan"]},
+                {"nama": "Sepatu Lari", "harga": "menengah", "usia": [15, 55], "gender": ["pria", "wanita"], "hobi": ["olahraga", "lari", "kesehatan"]},
+                {"nama": "Bola Basket", "harga": "rendah", "usia": [10, 35], "gender": ["pria", "wanita"], "hobi": ["olahraga", "basket", "tim"]}
+            ]
+        }
+
+        # Aturan reasoning untuk scoring
+        self.reasoning_rules = {
+            "usia_match": 3,
+            "gender_match": 2,
+            "hobi_match": 4,
+            "harga_match": 2,
+            "kategori_bonus": 1
+        }
+
+    def calculate_compatibility_score(self, gift: Dict, user_profile: Dict) -> int:
+        """Menghitung skor kompatibilitas berdasarkan reasoning rules"""
+        score = 0
+
+        # Rule 1: Kesesuaian usia
+        if gift["usia"][0] <= user_profile["usia"] <= gift["usia"][1]:
+            score += self.reasoning_rules["usia_match"]
+
+        # Rule 2: Kesesuaian gender
+        if user_profile["gender"] in gift["gender"]:
+            score += self.reasoning_rules["gender_match"]
+
+        # Rule 3: Kesesuaian hobi (multiple matches possible)
+        hobi_matches = len(set(user_profile["hobi"]) & set(gift["hobi"]))
+        score += hobi_matches * self.reasoning_rules["hobi_match"]
+
+        # Rule 4: Kesesuaian budget
+        if gift["harga"] == user_profile["budget"]:
+            score += self.reasoning_rules["harga_match"]
+        elif (gift["harga"] == "rendah" and user_profile["budget"] in ["menengah", "tinggi"]) or \
+             (gift["harga"] == "menengah" and user_profile["budget"] == "tinggi"):
+            score += 1  # Partial match untuk budget lebih tinggi
+
+        return score
+
+    def apply_reasoning_filters(self, user_profile: Dict) -> List[Dict]:
+        """Menerapkan filter reasoning untuk menyaring hadiah yang relevan"""
+        filtered_gifts = []
+
+        for category, gifts in self.gifts_data.items():
+            for gift in gifts:
+                # Basic filtering berdasarkan usia dan gender
+                if (gift["usia"][0] <= user_profile["usia"] <= gift["usia"][1] and
+                    user_profile["gender"] in gift["gender"]):
+
+                    # Hitung skor kompatibilitas
+                    score = self.calculate_compatibility_score(gift, user_profile)
+
+                    # Tambahkan informasi tambahan
+                    gift_with_score = gift.copy()
+                    gift_with_score["kategori"] = category
+                    gift_with_score["skor"] = score
+                    gift_with_score["reasoning"] = self.generate_reasoning(gift, user_profile)
+
+                    filtered_gifts.append(gift_with_score)
+
+        return filtered_gifts
+
+    def generate_reasoning(self, gift: Dict, user_profile: Dict) -> str:
+        """Generate penjelasan reasoning untuk rekomendasi"""
+        reasons = []
+
+        # Reasoning berdasarkan usia
+        if gift["usia"][0] <= user_profile["usia"] <= gift["usia"][1]:
+            reasons.append(f"Sesuai untuk usia {user_profile['usia']} tahun")
+
+        # Reasoning berdasarkan hobi
+        matching_hobbies = set(user_profile["hobi"]) & set(gift["hobi"])
+        if matching_hobbies:
+            reasons.append(f"Cocok dengan hobi: {', '.join(matching_hobbies)}")
+
+        # Reasoning berdasarkan budget
+        if gift["harga"] == user_profile["budget"]:
+            reasons.append(f"Sesuai budget {user_profile['budget']}")
+        elif gift["harga"] == "rendah" and user_profile["budget"] in ["menengah", "tinggi"]:
+            reasons.append("Harga terjangkau untuk budget Anda")
+
+        return "; ".join(reasons) if reasons else "Rekomendasi umum"
+
+    def get_recommendations(self, user_profile: Dict, top_n: int = 5) -> List[Dict]:
+        """Mendapatkan rekomendasi hadiah berdasarkan profil pengguna"""
+        # Terapkan reasoning filters
+        candidates = self.apply_reasoning_filters(user_profile)
+
+        # Urutkan berdasarkan skor (descending)
+        candidates.sort(key=lambda x: x["skor"], reverse=True)
+
+        # Ambil top N recommendations
+        return candidates[:top_n]
+
+    def explain_recommendation(self, gift: Dict) -> str:
+        """Memberikan penjelasan detail tentang rekomendasi"""
+        explanation = f"""
+=== REKOMENDASI: {gift['nama']} ===
+Kategori: {gift['kategori'].title()}
+Harga: {gift['harga'].title()}
+Skor Kompatibilitas: {gift['skor']}/10
+
+Alasan Rekomendasi:
+{gift['reasoning']}
+
+Target Usia: {gift['usia'][0]}-{gift['usia'][1]} tahun
+Cocok untuk: {', '.join(gift['gender'])}
+Relevan dengan hobi: {', '.join(gift['hobi'])}
+        """
+        return explanation
+
+def main():
+    # Inisialisasi AI
+    ai = GiftRecommendationAI()
+
+    print("=== AI REKOMENDASI HADIAH ===")
+    print("Sistem akan memberikan rekomendasi hadiah berdasarkan profil Anda\n")
+
+    # Input profil pengguna
+    try:
+        nama = input("Nama penerima hadiah: ")
+        usia = int(input("Usia: "))
+        gender = input("Gender (pria/wanita): ").lower()
+
+        print("\nPilih hobi (pisahkan dengan koma):")
+        print("Contoh: teknologi, gaming, musik, olahraga, fashion, seni, kuliner, membaca, travel")
+        hobi_input = input("Hobi: ").lower()
+        hobi = [h.strip() for h in hobi_input.split(",")]
+
+        print("\nBudget hadiah:")
+        print("1. Rendah (< 500K)")
+        print("2. Menengah (500K - 2jt)")
+        print("3. Tinggi (> 2jt)")
+        budget_choice = input("Pilih budget (1/2/3): ")
+
+        budget_map = {"1": "rendah", "2": "menengah", "3": "tinggi"}
+        budget = budget_map.get(budget_choice, "menengah")
+
+        # Buat profil pengguna
+        user_profile = {
+            "nama": nama,
+            "usia": usia,
+            "gender": gender,
+            "hobi": hobi,
+            "budget": budget
+        }
+
+        print(f"\n=== PROFIL PENGGUNA ===")
+        print(f"Nama: {user_profile['nama']}")
+        print(f"Usia: {user_profile['usia']} tahun")
+        print(f"Gender: {user_profile['gender']}")
+        print(f"Hobi: {', '.join(user_profile['hobi'])}")
+        print(f"Budget: {user_profile['budget']}")
+
+        # Dapatkan rekomendasi
+        recommendations = ai.get_recommendations(user_profile, top_n=5)
+
+        if not recommendations:
+            print("\nMaaf, tidak ada rekomendasi yang sesuai dengan profil Anda.")
+            return
+
+        print(f"\n=== TOP 5 REKOMENDASI HADIAH UNTUK {nama.upper()} ===")
+
+        for i, gift in enumerate(recommendations, 1):
+            print(f"\n{i}. {gift['nama']} (Skor: {gift['skor']})")
+            print(f"   Kategori: {gift['kategori'].title()}")
+            print(f"   Harga: {gift['harga'].title()}")
+            print(f"   Alasan: {gift['reasoning']}")
+
+        # Penjelasan detail untuk rekomendasi teratas
+        if recommendations:
+            print(f"\n=== ANALISIS DETAIL REKOMENDASI TERATAS ===")
+            print(ai.explain_recommendation(recommendations[0]))
+
+    except ValueError:
+        print("Error: Masukkan angka yang valid untuk usia!")
+    except KeyboardInterrupt:
+        print("\nProgram dihentikan oleh pengguna.")
+    except Exception as e:
+        print(f"Error: {e}")
+
+if __name__ == "__main__":
+    main()
